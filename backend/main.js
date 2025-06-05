@@ -1,26 +1,34 @@
 const express = require("express");
 const cors = require("cors");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+require('dotenv').config();
 
 const app = express();
-const PORT = 5001;
+const PORT = process.env.PORT || 5001;
+
+// CORS Configuration
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
 
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
-const apiKey = "AIzaSyAaUgKha2GsgfWpnbZiB42ycOZKYthfw98";
-
-const genAI = new GoogleGenerativeAI(apiKey);
+// Google Generative AI Initialization
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEN_AI_KEY);
 
 const model = genAI.getGenerativeModel({
   model: "gemini-1.5-flash",
 });
 
-const generationConfig = {
-  temperature: 0.7,
-  maxOutputTokens: 800,
-};
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'healthy' });
+});
 
 // Endpoint to fetch climate impact analysis
 app.post("/climate-impact", async (req, res) => {
@@ -34,8 +42,8 @@ app.post("/climate-impact", async (req, res) => {
     const prompt = `For ${artifactName}, fetch the climatic conditions of the artifact's location, including the following: temperature, humidity, UV exposure, and air quality. Perform a climate impact analysis based on these conditions, assess the risk to the artifact's preservation, and provide preventive care guidelines.`;
 
     const response = await model.generateContent([
-              { text: prompt },
-            ]);
+      { text: prompt },
+    ]);
 
     res.json({ analysis: response.response.text() });
   } catch (error) {
@@ -44,9 +52,18 @@ app.post("/climate-impact", async (req, res) => {
   }
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    error: 'Something went wrong!',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+  });
+});
+
 // Start the server
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
 
 
