@@ -1,5 +1,5 @@
 export const API_CONFIG = {
-  baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+  baseUrl: import.meta.env.VITE_API_URL || 'https://cultural-ai-backend.onrender.com',
 };
 
 export const API_ENDPOINTS = {
