@@ -11,6 +11,12 @@ import Community from './pages/Community';
 import Auth from './pages/Auth';
 import ProtectedRoute from './components/ProtectedRoutes';
 
+// API Configuration
+const API_CONFIG = {
+  main: import.meta.env.VITE_MAIN_API_URL || 'http://localhost:5000',
+  climate: import.meta.env.VITE_CLIMATE_API_URL || 'http://localhost:5001'
+};
+
 function App() {
   return (
     <>
